@@ -151,8 +151,6 @@ Data extraction
 ==  ==========================  ============================================
 
 
-Conversions
-----------------------------------------------------------------------------
 
 ==  ==========================  ============================================
 \*  :func:`tf`                  conversion to transfer function
@@ -1122,6 +1120,11 @@ def rlocus(sys, klist = None, **keywords):
     #! TODO: update with a smart calculation of the gains using sys poles/zeros
     if klist == None:
         klist = logspace(-3, 3)
+    
+    # Plots points at Breakout points
+    KatBO, BOpnts = _BOpntsLoc(sys)
+    klist = np.append(klist, KatBO)
+    klist = np.sort(klist)
 
     rlist = root_locus(sys, klist, **keywords)
     return rlist, klist
@@ -1528,4 +1531,3 @@ def c2d(sysc, Ts, method):
     # TODO: add docstring
     #  Call the sample_system() function to do the work
     return sample_system(sysc, Ts, method)
-
