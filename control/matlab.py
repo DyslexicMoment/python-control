@@ -1116,7 +1116,7 @@ def rlocus(sys, klist = None, **keywords):
     klist:
         list of gains used to compute roots
     """
-    from .rlocus import root_locus
+    from .rlocus import root_locus, _BOpntsLoc
     #! TODO: update with a smart calculation of the gains using sys poles/zeros
     if klist == None:
         klist = logspace(-3, 3)
