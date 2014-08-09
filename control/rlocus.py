@@ -46,7 +46,7 @@
 # $Id$
 
 # Packages used by this module
-from scipy import array, poly1d, row_stack, zeros_like, real, imag
+from scipy import array, poly1d, row_stack, zeros_like, real, imag, polyder, polyval, roots, vectorize
 import scipy.signal             # signal processing toolbox
 import pylab                    # plotting routines
 from . import xferfcn
@@ -193,3 +193,40 @@ def _RLFeedbackClicks(event, sys):
     if abs(K.real) > 1e-8 and abs(K.imag/K.real) < 0.04:
         print("Clicked at %10.4g%+10.4gj gain %10.4g damp %10.4g" %
               (s.real, s.imag, K.real, -1*s.real/abs(s)))
+
+def _BOpntsLoc(sys):
+    """Breakout point locater
+    
+    This returns the location of breakout points on the root locus and 
+    the associated gains at those locations.
+    
+    Parameters
+    ----------
+    sys: StateSpace or TransferFunction
+        Linear system
+        
+    Returns
+    -------
+    KatBO:
+        list of gains at which a breakout point occurs
+    BOpnts:
+        list of breakout points
+    """
+    (nump, denp) = _systopoly1d(sys)
+    
+    # Breakout points potentially occur where N*D' - N'*D = 0
+    numpD = polyder(nump)
+    denpD = polyder(denp)
+    BOpnts = roots((nump*denpD) - (numpD*denp))
+    
+    # Selects only the Breakout points on the real line
+    BOpnts = BOpnts[imag(BOpnts) == 0] 
+    
+    # Finds gains from breakout points
+    fgain = vectorize(lambda s: polyval(-denp,s)/polyval(nump,s))
+    KatBO = fgain(BOpnts)
+    
+    # Selects only the positive gains at the Breakout points
+    KatBO = KatBO[KatBO >= 0]
+
+    return KatBO, BOpnts
